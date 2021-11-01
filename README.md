@@ -1,5 +1,6 @@
 # devops-netology
 First edit
+Second edit
 
 # Local .terraform directories
 ## Следующее правило игнорирует все файлы находящиеся в любых поддиректориях директории .terraform
