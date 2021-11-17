@@ -1,97 +1,72 @@
 #devops-netology  
 
 ---
-##Домашнее задание к занятию «2.3. Ветвления в Git»
-### 1. Подготовка
-Создан каталог `branching` внутри которого созданы файлы `merge.sh` и `rebase.sh`, содержащие bash скрипт.
-Создан коммит с описанием `prepare for merge and rebase` и отправлен в ветку main удаленного репозитория:
+##Домашнее задание к занятию «2.4. Инструменты Git»
+### 1. Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.
+        $ git rev-parse aefea
+        aefead2207ef7e2aa5dc81a34aedf0cad4c32545
 
-        $ git add .
-        $ git commit -m "prepare for merge and rebase"
-### 2. Подготовка файла merge.sh
-Создана ветка git-merge: 
+### 2. Какому тегу соответствует коммит 85024d3?
+        $ git show -s --format=%s 85024d3
+        v0.12.23
 
-        $ git checkout -b git-merge 
-Внесены требуемые правки в файл `merge.sh` и отправлены в репозиторий:
+### 3. Сколько родителей у коммита b8d720? Напишите их хеши.
+        $ git show --format=%P b8d720
+        56cd7859e05c36c06b56d013b55a252d0bb7e158 9ea88f22fc6269854151c571162c5bcf958bee2b
 
-        $ git add .
-        $ git commit -m "merge: @ instead *"
-        $ git push -u origin git-merge
-Добавлены новые изменения в файл `merge.sh`, закоммичены и отправлены в репозиторий:
+### 4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
+        $ git log --oneline v0.12.23..v0.12.24 --skip=1
+        b14b74c49 [Website] vmc provider links
+        3f235065b Update CHANGELOG.md
+        6ae64e247 registry: Fix panic when server is unreachable
+        5c619ca1b website: Remove links to the getting started guide's old location
+        06275647e Update CHANGELOG.md
+        d5f9411f5 command: Fix bug when using terraform login on Windows
+        4b6d06cc5 Update CHANGELOG.md
+        dd01a3507 Update CHANGELOG.md
+        225466bc3 Cleanup after v0.12.23 release
 
-        $ git add .
-        $ git commit -m "merge: use shift"
-        $ git push -u origin git-mereg
-### 3. Изменения в ветке main
-Следующим шагом в ветке main произведены изменения в файле rebase.sh и отправлены в репозиторий:
+### 5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
+        $ git log --oneline --pickaxe-regex -S 'func providerSource\(.*\)'
+        8c928e835 main: Consult local directories as potential mirrors of providers
 
-        $ git switch main
-        $ nano branching/rebase.sh
-        $ git add .
-        $ git commit -m "edit rebase.sh in main"
-        $ git push -u origin main
-### 4.Подготовка файла rebase.sh
-Найден хэш коммита prepare for merge and rebase, о найденного коммита создана новая ветка git-rebase:   
+### 6. Найдите все коммиты в которых была изменена функция globalPluginDirs.
+        $ git grep -p 'globalPluginDirs'
+        commands.go=func initCommands(
+        commands.go:            GlobalPluginDirs: globalPluginDirs(),
+        commands.go=func credentialsSource(config *cliconfig.Config) (auth.CredentialsSource, error) {
+        commands.go:    helperPlugins := pluginDiscovery.FindPlugins("credentials", globalPluginDirs())
+        plugins.go=import (
+        plugins.go:func globalPluginDirs() []string {
+        $ git log --oneline --no-patch -L :globalPluginDirs:plugins.go
+        78b122055 Remove config.go and update things using its aliases
+        52dbf9483 keep .terraform.d/plugins for discovery
+        41ab0aef7 Add missing OS_ARCH dir to global plugin paths
+        66ebff90c move some more plugin search path logic to command
+        8364383c3 Push plugin discovery down into command package
 
-        $ git log --oneline | grep 'prepare for merge and rebase'
-        $ git checkout f311cd4
-        $ git switch -c git-rebase
-В файл rebase.sh внесены изменения, закоммичены и отправлены в репозиторий в ветку git-rebase:
-
-        $ git add .
-        $ git commit -m "git-rebase 1"
-        $ git push -u origin git-rebase
-Следующее изменение в файле rebase.sh, с сообщением коммита `git-rebase 2` отправлено в репозиторий:
-        
-        $ git add.
-        $ git commit -m "git-rebase 2"
-        $ git push -u origin git-rebase
-### 5. Промежуточный итог
-![Созданы обе ветки](https://c.radikal.ru/c03/2111/d0/ff30a0dd45e5.png)
-> Скриншот графического отображения состояния веток репозитория https://github.com/martynov-andrey/devops-netology/network
-### 6. Merge
-Произведено слияние ветки git-merge, и передано в репозиторий: 
-
-        $ git checkout main
-        $ git merge git-merge
-        $ git push
-![Merge git-gerge](https://d.radikal.ru/d08/2111/ce/0bd7b1ec624d.png)
-### 7. Rebase
-Выполнена операция перебазирования ветки git-rebase в ветку main: 
-        
-        $ git switch git-rebase
-        $ git rebase -i main
-В открывшемся диалоговом окне произведена замена в нижней строчке pickup на fixup:
-
-        pick 0f15197 git-rebase 1
-        fixup 93d11ee git-rebase 2
-В файле rebase.sh разрешен конфликт, продолжен ребейз:
-
-        $ git add branching/rebase.sh
-        $ git rebase --continue
-Повторно разрешен следующий конфликт в файле rebase.sh и завершен ребейз ветки:
-
-        $ git add branching/rebase.sh
-        $ git rebase --continue
-Сообщение об успешном завершении операции:   
-
-`[detached HEAD 2ecb259] Merge branch 'git-merge' into main Date: Thu Nov 4 20:37:51 2021 +0300 Successfully rebased and updated refs/heads/git-rebase.`  
-
-Сохранить изменения в ветке в репозиторий возможно с флагом force: 
-        
-        $ git push -u origin git-rebase -f
-
-![Ветка git-rebase](https://a.radikal.ru/a20/2111/da/e40dc25afa44.png)
-Мердж ветки git-merge в main:
-
-        $ git checkout main
-        $ git merge git-rebase
-Происходит с сообщением:  
-
-`Merge made by the 'recursive' strategy.`  
-`branching/rebase.sh | 2 +-`  
-`1 file changed, 1 insertion(+), 1 deletion(-)`  
-
-Собщение указывает на слияние простым трехсторонним методом, что расходится с описанием в задании.
-
-![Конечный результат](https://a.radikal.ru/a19/2111/fd/de92f94e0f66.png)
+### 7. Кто автор функции synchronizedWriters?
+        $ git log --pretty=format:"%h %ad %s" -G 'synchronizedWriters'
+        bdfea50cc Mon Nov 30 18:02:04 2020 -0500 remove unused
+        fd4f7eb0b Wed Oct 21 13:06:23 2020 -0400 remove prefixed io
+        5ac311e2a Wed May 3 16:25:41 2017 -0700 main: synchronize writes to VT100-faker on Windows
+        $ git checkout 5ac311e2a
+        $ git grep -n -p synchronizedWriters
+        main.go=234=func copyOutput(r io.Reader, doneCh chan<- struct{}) {
+        main.go:267:            wrapped := synchronizedWriters(stdout, stderr)
+        synchronized_writers.go=8=type synchronizedWriter struct {
+        synchronized_writers.go:13:// synchronizedWriters takes a set of writers and returns wrappers that ensure
+        synchronized_writers.go:15:func synchronizedWriters(targets ...io.Writer) []io.Writer {
+        $ git blame --line-porcelain -L 15,15 synchronized_writers.go
+        5ac311e2a91e381e2f52234668b49ba670aa0fe5 15 15 1
+        author Martin Atkins
+        author-mail <mart@degeneration.co.uk>
+        author-time 1493853941
+        author-tz -0700
+        committer Martin Atkins
+        committer-mail <mart@degeneration.co.uk>
+        committer-time 1493937411
+        committer-tz -0700
+        summary main: synchronize writes to VT100-faker on Windows
+        filename synchronized_writers.go
+        func synchronizedWriters(targets ...io.Writer) []io.Writer {
