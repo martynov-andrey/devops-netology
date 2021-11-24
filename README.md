@@ -1,7 +1,9 @@
 #devops-netology  
 
 ---
+
 ##Домашнее задание к занятию "3.1. Работа в терминале, лекция 1"
+
 ### 1. Установите средство виртуализации Oracle VirtualBox.
 
         sudo apt install virtualbox  
