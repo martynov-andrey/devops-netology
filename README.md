@@ -1,72 +1,158 @@
-# devops-netology  
+#devops-netology  
 
 ---
-## Домашнее задание к занятию «2.4. Инструменты Git»
-### 1. Найдите полный хеш и комментарий коммита, хеш которого начинается на aefea.
-        $ git rev-parse aefea
-        aefead2207ef7e2aa5dc81a34aedf0cad4c32545
+##Домашнее задание к занятию "3.1. Работа в терминале, лекция 1"
+### 1. Установите средство виртуализации Oracle VirtualBox.
 
-### 2. Какому тегу соответствует коммит 85024d3?
-        $ git show -s --format=%s 85024d3
-        v0.12.23
+        sudo apt install virtualbox  
 
-### 3. Сколько родителей у коммита b8d720? Напишите их хеши.
-        $ git show --format=%P b8d720
-        56cd7859e05c36c06b56d013b55a252d0bb7e158 9ea88f22fc6269854151c571162c5bcf958bee2b
+### 2. Установите средство автоматизации Hashicorp Vagrant.
 
-### 4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
-        $ git log --oneline v0.12.23..v0.12.24 --skip=1
-        b14b74c49 [Website] vmc provider links
-        3f235065b Update CHANGELOG.md
-        6ae64e247 registry: Fix panic when server is unreachable
-        5c619ca1b website: Remove links to the getting started guide's old location
-        06275647e Update CHANGELOG.md
-        d5f9411f5 command: Fix bug when using terraform login on Windows
-        4b6d06cc5 Update CHANGELOG.md
-        dd01a3507 Update CHANGELOG.md
-        225466bc3 Cleanup after v0.12.23 release
+```bash
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt-get update && sudo apt-get install vagrant
+```
 
-### 5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
-        $ git log --oneline --pickaxe-regex -S 'func providerSource\(.*\)'
-        8c928e835 main: Consult local directories as potential mirrors of providers
+### 3. В вашем основном окружении подготовьте удобный для дальнейшей работы терминал. Можно предложить:
+* iTerm2 в Mac OS X
+* Windows Terminal в Windows
+* выбрать цветовую схему, размер окна, шрифтов и т.д.
+* почитать о кастомизации PS1/применить при желании.
 
-### 6. Найдите все коммиты в которых была изменена функция globalPluginDirs.
-        $ git grep -p 'globalPluginDirs'
-        commands.go=func initCommands(
-        commands.go:            GlobalPluginDirs: globalPluginDirs(),
-        commands.go=func credentialsSource(config *cliconfig.Config) (auth.CredentialsSource, error) {
-        commands.go:    helperPlugins := pluginDiscovery.FindPlugins("credentials", globalPluginDirs())
-        plugins.go=import (
-        plugins.go:func globalPluginDirs() []string {
-        $ git log --oneline --no-patch -L :globalPluginDirs:plugins.go
-        78b122055 Remove config.go and update things using its aliases
-        52dbf9483 keep .terraform.d/plugins for discovery
-        41ab0aef7 Add missing OS_ARCH dir to global plugin paths
-        66ebff90c move some more plugin search path logic to command
-        8364383c3 Push plugin discovery down into command package
+    ```bash
+        $ PS1='\t j\j \[\033[01;31m\]\u\[\033[01;33m\]@\[\033[01;32m\]\h: \[\033[01;33m\]\w\n \[\033[01;35m\]\$ \[\033[00m\]'
 
-### 7. Кто автор функции synchronizedWriters?
-        $ git log --pretty=format:"%h %ad %s" -G 'synchronizedWriters'
-        bdfea50cc Mon Nov 30 18:02:04 2020 -0500 remove unused
-        fd4f7eb0b Wed Oct 21 13:06:23 2020 -0400 remove prefixed io
-        5ac311e2a Wed May 3 16:25:41 2017 -0700 main: synchronize writes to VT100-faker on Windows
-        $ git checkout 5ac311e2a
-        $ git grep -n -p synchronizedWriters
-        main.go=234=func copyOutput(r io.Reader, doneCh chan<- struct{}) {
-        main.go:267:            wrapped := synchronizedWriters(stdout, stderr)
-        synchronized_writers.go=8=type synchronizedWriter struct {
-        synchronized_writers.go:13:// synchronizedWriters takes a set of writers and returns wrappers that ensure
-        synchronized_writers.go:15:func synchronizedWriters(targets ...io.Writer) []io.Writer {
-        $ git blame --line-porcelain -L 15,15 synchronized_writers.go
-        5ac311e2a91e381e2f52234668b49ba670aa0fe5 15 15 1
-        author Martin Atkins
-        author-mail <mart@degeneration.co.uk>
-        author-time 1493853941
-        author-tz -0700
-        committer Martin Atkins
-        committer-mail <mart@degeneration.co.uk>
-        committer-time 1493937411
-        committer-tz -0700
-        summary main: synchronize writes to VT100-faker on Windows
-        filename synchronized_writers.go
-        func synchronizedWriters(targets ...io.Writer) []io.Writer {
+    ```
+
+### 4. С помощью базового файла конфигурации запустите Ubuntu 20.04 в VirtualBox посредством Vagrant:
+  * Создайте директорию, в которой будут храниться конфигурационные файлы Vagrant. В ней выполните vagrant init. Замените содержимое Vagrantfile по умолчанию следующим:
+
+    ```bash
+    Vagrant.configure("2") do |config| 
+       config.vm.box = "bento/ubuntu-20.04"   
+    end
+    ```
+    
+  * Выполнение в этой директории `vagrant up` установит провайдер VirtualBox для Vagrant, скачает необходимый образ и запустит виртуальную машину.
+    
+    ```bash    
+    $ vargrant up
+    ```  
+
+  * `vagrant suspend` выключит виртуальную машину с сохранением ее состояния (т.е., при следующем `vagrant up` будут запущены все процессы внутри, которые работали на момент вызова suspend), `vagrant halt` выключит виртуальную машину штатным образом.
+
+    ```bash
+    $ vagrant suspend
+    $ vagrant resume
+    $ vagrant halt
+    ```
+
+### 5. Ознакомьтесь с графическим интерфейсом VirtualBox, посмотрите как выглядит виртуальная машина, которую создал для вас Vagrant, какие аппаратные ресурсы ей выделены. Какие ресурсы выделены по-умолчанию?
+
++ OS: Ubuntu (64bit)
++ RAM: 1024
++ CPU: 2
++ VBoxVGA: 4Mb
++ HDD: 64Gb
+
+### 6. Ознакомьтесь с возможностями конфигурации VirtualBox через Vagrantfile: документация. Как добавить оперативной памяти или ресурсов процессора виртуальной машине?
+
+```bash
+    config.vm.provider "virtualbox" do |v|
+      v.gui = true
+      v.name = my_mv
+      v.memory = 2048
+      v.cpus = 2
+    end
+```                
+
+### 7. Команда vagrant ssh из директории, в которой содержится Vagrantfile, позволит вам оказаться внутри виртуальной машины без каких-либо дополнительных настроек. Попрактикуйтесь в выполнении обсуждаемых команд в терминале Ubuntu.
+
+```bash
+      $ vagrsnt ssh
+```
+
+### 8. Ознакомиться с разделами man bash, почитать о настройках самого bash:
+
+* какой переменной можно задать длину журнала history, и на какой строчке manual это описывается?
+* что делает директива ignoreboth в bash?
+
+Переменная `HISTSIZE` указывает длинну журнала команды `HISTORY`. В `man bash` информация о переменной описана в 595 строке документации.
+
+```bash
+        $ echo $HISTSIZE
+        1000
+```
+
+Директива `ignoreboth` сокращение для `ignorespace` - не записывать команды, которые начинаются с пробела и `ignoredups` - не записывать команду, которая начинается с пробела, либо команду, которая дублирует предыдущую.
+
+```bash
+        $ export HISTCONTROL = ignoreboth
+```
+
+### 9. В каких сценариях использования применимы скобки {} и на какой строчке man bash это описано?
+
+`{}` - зарезервированные слова bash (RESERVED WORDS). Используются в условных циклах, условных операторах, или ограничивает тело функции. В `man bash` описано в 133 строке.
+В командах выполняет подстановку элементов списка, выполняется в контексте текущей оболочки.
+
+```bash
+        $ echo test_{A..F}
+        test_A test_B test_C test_D test_E test_F
+```
+
+### 10. С учётом ответа на предыдущий вопрос, как создать однократным вызовом touch 100000 файлов? Получится ли аналогичным образом создать 300000? Если нет, то почему?
+
+```bash
+        $ touch {1..100000}.txt
+```
+
+Команда `$ touch {1..300000}.txt` выдает ошибку превышения максимального числа аргументов, которые можно передать команде.
+
+```bash
+      $ getconf ARG_MAX
+      2097152
+```
+
+Указывает максимальное число символов.
+
+### 11. В man bash поищите по `/\[\[`. Что делает конструкция `[[ -d /tmp ]]`
+
+Конструкция проверяет условие наличия каталога /tmp и возвращает статус (0 или 1)
+
+```bash
+        $ if [[ -d /tmp ]]; then echo "True"; else "False"; fi
+```
+
+### 12. Основываясь на знаниях о просмотре текущих (например, PATH) и установке новых переменных; командах, которые мы рассматривали, добейтесь в выводе type -a bash в виртуальной машине наличия первым пунктом в списке:
+	
+```bash
+	bash is /tmp/new_path_directory/bash
+	bash is /usr/local/bin/bash
+	bash is /bin/bash
+```
+
+Решение:
+
+```bash
+      $ mkdir -p /tmp/new_path_directory/
+      $ cp /usr/bin/bash /tmp/new_path_directory/
+      $ PATH=/tmp/new_path_directory/:$PATH
+      $ type -a bash
+      bash is /tmp/new_path_directory/bash
+      bash is /usr/bin/bash
+      bash is /bin/bash
+```
+
+### 13. Чем отличается планирование команд с помощью batch и at?
+
+`at` - выполянет команды в указанное время 
+
+`batch` - выполняет команды, когда уровень загрузки системы снизится ниже значения 1.5.
+
+### 14. Завершите работу виртуальной машины чтобы не расходовать ресурсы компьютера и/или батарею ноутбука.
+
+```bash
+        $ logout
+        $ vagrant halt
+```
