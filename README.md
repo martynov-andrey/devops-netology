@@ -2,159 +2,211 @@
 
 ---
 
-### Домашнее задание к занятию "3.3. Операционные системы, лекция 1"
+### Домашнее задание к занятию "3.4. Операционные системы, лекция 2"
 
-1. #### Какой системный вызов делает команда `cd`? В прошлом ДЗ мы выяснили, что `cd` не является самостоятельной  программой, это `shell builtin`, поэтому запустить `strace` непосредственно на `cd` не получится. Тем не менее, вы можете запустить `strace` на `/bin/bash -c 'cd /tmp'`. В этом случае вы увидите полный список системных вызовов, которые делает сам `bash` при старте. Вам нужно найти тот единственный, который относится именно к `cd`.
-   
-   ```bash
-   $ strace /bin/bash -c 'cd /tmp'
-   ```   
+1. #### На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
-Ответ: `chdir("/tmp")`
+    * поместите его в автозагрузку,
+    * предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
+    * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
-2. #### Попробуйте использовать команду `file` на объекты разных типов на файловой системе. Например:
+```bash
+    $ systemctl cat node-exporter
+# /etc/systemd/system/node-exporter.service
+[Unit]
+Description=Prometheus Node Exporter
+Documentation=https://github.com/prometheus/node_exporter
+[Service]
+Restart=always
+User=prometheus
+Group=prometheus
+EnvironmentFile=/etc/default/node-exporter
+ExecStart=/usr/local/bin/node_exporter $OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
+[Install]
+WantedBy=multi-user.target
+    $ cat /etc/default/node-exporter
+# Set the command-line arguments to pass to the server.
+OPTIONS=""
+    $ sudo systemctl enable node-exporter
+    Created symlink /etc/systemd/system/multi-user.target.wants/node-exporter.service → /etc/systemd/system/node-exporter.service.
+    $ sudo systemctl start node-exporter
+    $ sudo systemctl status node-exporter
+● node-exporter.service - Prometheus Node Exporter
+     Loaded: loaded (/etc/systemd/system/node-exporter.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2021-12-04 15:43:47 UTC; 2min 13s ago
+       Docs: https://github.com/prometheus/node_exporter
+   Main PID: 6582 (node_exporter)
+      Tasks: 5 (limit: 1112)
+     Memory: 2.5M
+     CGroup: /system.slice/node-exporter.service
+             └─6582 /usr/local/bin/node_exporter
 
-   ```bash
-    vagrant@netology1:~$ file /dev/tty
-    /dev/tty: character special (5/0)
-    vagrant@netology1:~$ file /dev/sda
-    /dev/sda: block special (8/0)
-    vagrant@netology1:~$ file /bin/bash
-    /bin/bash: ELF 64-bit LSB shared object, x86-64
-    ```
-    Используя `strace` выясните, где находится база данных `file` на основании которой она делает свои догадки.
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.966Z caller=node_exporter.go:115 level=info collector=thermal_zone
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.966Z caller=node_exporter.go:115 level=info collector=time
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.967Z caller=node_exporter.go:115 level=info collector=timex
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.968Z caller=node_exporter.go:115 level=info collector=udp_queues
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.968Z caller=node_exporter.go:115 level=info collector=uname
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.969Z caller=node_exporter.go:115 level=info collector=vmstat
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.969Z caller=node_exporter.go:115 level=info collector=xfs
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.970Z caller=node_exporter.go:115 level=info collector=zfs
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.973Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Dec 04 15:43:47 vagrant node_exporter[6582]: ts=2021-12-04T15:43:47.977Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
+    $ sudo systemctl stop node-exporter
+    $ sudo systemctl status node-exporter
+● node-exporter.service - Prometheus Node Exporter
+     Loaded: loaded (/etc/systemd/system/node-exporter.service; enabled; vendor preset: enabled)
+     Active: inactive (dead) since Sat 2021-12-04 15:55:56 UTC; 1s ago
+       Docs: https://github.com/prometheus/node_exporter
+    Process: 582 ExecStart=/usr/local/bin/node_exporter $OPTIONS (code=killed, signal=TERM)
+   Main PID: 582 (code=killed, signal=TERM)
 
-Ответ: `openat` - системный вызов возвращает файловый дескриптор по указанному абсолютному пути. Очевидно файл `magic.mgc` является искомой базой данных команды `file`
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.912Z caller=node_exporter.go:115 level=info collector=udp_queues
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.912Z caller=node_exporter.go:115 level=info collector=uname
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.912Z caller=node_exporter.go:115 level=info collector=vmstat
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.912Z caller=node_exporter.go:115 level=info collector=xfs
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.912Z caller=node_exporter.go:115 level=info collector=zfs
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.939Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Dec 04 15:52:00 vagrant node_exporter[582]: ts=2021-12-04T15:52:00.956Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
+Dec 04 15:55:56 vagrant systemd[1]: Stopping Prometheus Node Exporter...
+Dec 04 15:55:56 vagrant systemd[1]: node-exporter.service: Succeeded.
+Dec 04 15:55:56 vagrant systemd[1]: Stopped Prometheus Node Exporter.
+```
 
-   ```bash
-   openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
-   ```
+Согласно заданию создан простой unit-file для утилиты node_exporter, в отдельном файле /etc/default/node-exporter предусмотрена возможность добавления опций к запускаемому процессу. Сервис помещен в автозапуск, успешно стартует, останавливается и автоматически поднимается после рестарта сервера.
 
-3. #### Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
+2. #### Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
 
-   ```bash
-   $ screen -S free
-   $ free -h -s 3 >> free_file.txt
-   Ctrl+a+D
-   $ ps -A | grep free
-   8952 pts/3    00:00:00 free
-   $ rm free_file.txt
-   $ lsof -p 8952 | grep free_file.txt
-   free    8952 vagrant    1w   REG  253,0    26854     131081 /home/vagrant/free_file.txt (deleted)
-   $ ls -l /proc/8952/fd/
-   total 0
-   lrwx------ 1 vagrant vagrant 64 Nov 30 11:35 0 -> /dev/pts/3
-   l-wx------ 1 vagrant vagrant 64 Nov 30 11:35 1 -> '/home/vagrant/free_file.txt (deleted)'
-   lrwx------ 1 vagrant vagrant 64 Nov 30 11:35 2 -> /dev/pts/3
-   lr-x------ 1 vagrant vagrant 64 Nov 30 11:35 3 -> /proc/meminfo
-   $ echo "" > /proc/8952/fd/1
-   ```
+```bash
+#HELP node_cpu_seconds_total Seconds the CPUs spent in each mode.
+node_cpu_seconds_total{cpu="0",mode="idle"} 923.27
+node_cpu_seconds_total{cpu="0",mode="iowait"} 3.08
+node_cpu_seconds_total{cpu="0",mode="irq"} 0
+node_cpu_seconds_total{cpu="0",mode="nice"} 0
+node_cpu_seconds_total{cpu="0",mode="softirq"} 7.96
+node_cpu_seconds_total{cpu="0",mode="steal"} 0
+node_cpu_seconds_total{cpu="0",mode="system"} 42.81
+node_cpu_seconds_total{cpu="0",mode="user"} 22.55
+# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds.
+process_cpu_seconds_total 1.36
+#HELP node_memory_MemAvailable_bytes Memory information field MemAvailable_bytes.
+node_memory_MemAvailable_bytes 7.00133376e+08
+# HELP node_memory_MemFree_bytes Memory information field MemFree_bytes.
+node_memory_MemFree_bytes 5.8247168e+08
+# HELP node_memory_MemTotal_bytes Memory information field MemTotal_bytes.
+node_memory_MemTotal_bytes 1.028685824e+09
+# HELP node_disk_read_bytes_total The total number of bytes read successfully.
+node_disk_read_bytes_total{device="sda"} 2.53899776e+08
+# HELP node_disk_read_time_seconds_total The total number of seconds spent by all reads.
+node_disk_read_time_seconds_total{device="sda"} 23.801000000000002
+# HELP node_disk_write_time_seconds_total This is the total number of seconds spent by all writes.
+node_disk_write_time_seconds_total{device="sda"} 20.325
+# HELP node_disk_written_bytes_total The total number of bytes written successfully.
+node_disk_written_bytes_total{device="sda"} 1.9395584e+07
+# HELP node_disk_io_now The number of I/Os currently in progress.
+node_disk_io_now{device="sda"} 0
+# HELP node_disk_io_time_seconds_total Total seconds spent doing I/Os.
+node_disk_io_time_seconds_total{device="sda"} 33.836
+# HELP node_network_receive_bytes_total Network device statistic receive_bytes.
+node_network_receive_bytes_total{device="eth0"} 222698
+# HELP node_network_receive_drop_total Network device statistic receive_drop.
+node_network_receive_drop_total{device="eth0"} 0
+# HELP node_network_receive_errs_total Network device statistic receive_errs.     
+node_network_receive_errs_total{device="eth0"} 0
+# HELP node_network_transmit_bytes_total Network device statistic transmit_bytes.
+node_network_transmit_bytes_total{device="eth0"} 173009
+# HELP node_network_transmit_drop_total Network device statistic transmit_drop.
+node_network_transmit_drop_total{device="eth0"} 0
+# HELP node_network_transmit_errs_total Network device statistic transmit_errs.
+node_network_transmit_errs_total{device="eth0"} 0
+```
 
-4. #### Занимают ли зомби-процессы какие-то ресурсы в ОС (CPU, RAM, IO)?
-
-   ```bash
-   $ top | grep zombie
-   Tasks: 109 total,   1 running, 107 sleeping,   0 stopped,   1 zombie
-	
-   $ ps -alx | awk '$10 ~ /STAT|Z/'
-   F   UID     PID    PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
-   1  1000     976     966  20   0      0     0 -      Z    tty1       0:00 [top] <defunct>
-   ```
-Зомби-процессы освобождают свои процессы, но запись в таблице процессов остается. Удалить зомби-процесс можно, если перезапустить или убить процесс-родитель.   
-
-5. #### В iovisor BCC есть утилита `opensnoop`:
+3. #### Установите в свою виртуальную машину [Netdata](https://github.com/netdata/netdata). Воспользуйтесь [готовыми пакетами](https://packagecloud.io/netdata/netdata/install) для установки (`sudo apt install -y netdata`). После успешной установки:
+    * в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0`,
+    * добавьте в Vagrantfile проброс порта Netdata на свой локальный компьютер и сделайте `vagrant reload`:
 
     ```bash
-    root@vagrant:~# dpkg -L bpfcc-tools | grep sbin/opensnoop
-    /usr/sbin/opensnoop-bpfcc
+    config.vm.network "forwarded_port", guest: 19999, host: 19999
     ```
-    На какие файлы вы увидели вызовы группы `open` за первую секунду работы утилиты? Воспользуйтесь пакетом `bpfcc-tools` для Ubuntu 20.04. Дополнительные [сведения по установке](https://github.com/iovisor/bcc/blob/master/INSTALL.md).
 
-   ```bash
-    $ sudo opensnoop-bpfcc -d 1
-    PID    COMM               FD ERR PATH
-    1052   vminfo              4   0 /var/run/utmp
-    593    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
-    593    dbus-daemon        19   0 /usr/share/dbus-1/system-services
-    593    dbus-daemon        -1   2 /lib/dbus-1/system-services
-    593    dbus-daemon        19   0 /var/lib/snapd/dbus-1/system-services/
-    598    irqbalance          6   0 /proc/interrupts
-    598    irqbalance          6   0 /proc/stat
-   ```
-Команда отслеживает все системные вызовы open() с за интервал в 1 секунду.
+    После успешной перезагрузки в браузере *на своем ПК* (не в виртуальной машине) вы должны суметь зайти на `localhost:19999`. Ознакомьтесь с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам.
 
-6. #### Какой системный вызов использует `uname -a`? Приведите цитату из man по этому системному вызову, где описывается альтернативное местоположение в `/proc`, где можно узнать версию ядра и релиз ОС.
+```bash
+      $ sudo lsof -i :19999
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+netdata 1351 netdata    4u  IPv4  29495      0t0  TCP *:19999 (LISTEN)
+netdata 1351 netdata   30u  IPv4  37166      0t0  TCP vagrant:19999->_gateway:60567 (ESTABLISHED)
+```
 
-`uname -a` использует системный вызов uname(): `uname({sysname="Linux", nodename="vagrant", ...}) = 0`
+![Netdata](img/netdata.png)
 
-Цитата `man 2 uname`:
+4. #### Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
 
-> Part of the utsname information is also accessible via /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}.
+```bash
+    $ dmesg | grep virtual
+[    0.013488] CPU MTRRs all blank - virtualized system.
+[    0.131591] Booting paravirtualized kernel on KVM
+[   11.407730] systemd[1]: Detected virtualization oracle.
+```
 
-7. #### Чем отличается последовательность команд через `;` и через `&&` в bash? Например:
+Судя по выводу ядро понимает что оно работает под паравиртуализацией.
 
-    ```bash
-    root@netology1:~# test -d /tmp/some_dir; echo Hi
-    Hi
-    root@netology1:~# test -d /tmp/some_dir && echo Hi
-    root@netology1:~#
-    ```
-    Есть ли смысл использовать в bash `&&`, если применить `set -e`?
+5. #### Как настроен sysctl `fs.nr_open` на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
 
-Ответ:
+```bash
+    $ sysctl -n fs.nr_open
+    1048576
+````
+Максимальное число дескрипторов файлов, которое может быть выделено процессу 1024*1024=1048576. 
 
-Команды разделенные знаком `;` выполняются последовательно, оболочка ожидает завершения каждой команды по очереди. 
+```bash
+    $ ulimit -Hn
+    1048576
+```
 
-Команда справа разделенная условным оператором AND `&&`, выполняется только после выполнения команды слева с успешным статусом завершения.
+Hard лимит числа открытых файловых дескрипторов процесса для пользователя. Максимально возможное число, не может быть больше чем значение `fs.nr_open`. 
 
-`set -e` - заставляет оболочку завершиться, если какая-либо подкоманда или конвейер возвращает ненулевой статус. Оболочка не завершает работу, если неудачная команда является частью любой команды выполянемой в списке &&, кроме последней команды. 
+```bash
+    $ ulimit -Sn
+    1024      
+```
+Soft лимит числа открытых файловых дескрипторов, которое может быть увеличено до значения предела Hard лимита в пределах текущей сесии.
 
-   ```bash
-   ~$ echo 'End' && ls -l /root
-   End
-   ls: cannot open directory '/root': Permission denied
-   Connection to 172.18.128.1 closed
-   ```
-В случае если команда слева завершается с кодом выхода 0, команда справа выполнит выход из оболочки, если завершающий код не = 0. Если команда слева завершается ошибкой, команда справа не будет выполнена. Видимо `set -e` имеет смысл.
+6. #### Запустите любой долгоживущий процесс (не `ls`, который отработает мгновенно, а, например, `sleep 1h`) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через `nsenter`. Для простоты работайте в данном задании под root (`sudo -i`). Под обычным пользователем требуются дополнительные опции (`--map-root-user`) и т.д.
 
-8. #### Из каких опций состоит режим bash `set -euxo pipefail` и почему его хорошо было бы использовать в сценариях?
+```bash
+      unshare -f --pid --mount-proc sleep 1h&
+[1] 2541
+      ps aux | grep sleep
+root        2541  0.0  0.0   8080   592 pts/0    S    14:13   0:00 unshare -f --pid --mount-proc sleep 1h
+root        2542  0.0  0.0   8076   592 pts/0    S    14:13   0:00 sleep 1h
+root        2653  0.0  0.0   8900   672 pts/0    S+   14:25   0:00 grep --color=auto sleep
+      nsenter --target 2542 --pid --mount
+      ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.0   8076   592 pts/0    S    14:13   0:00 sleep 1h
+root          12  0.8  0.3   9836  4016 pts/0    S    14:27   0:00 -bash
+root          21  0.0  0.3  11492  3324 pts/0    R+   14:27   0:00 ps aux
+```
 
-`-e` - прекращает выполнение скрипта если команда завершилась ошибкой, выводит в stderr строку с ошибкой последней команды конвеера;
+7. #### Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
-`-u` - прекращает выполнение скрипта, если встретилась несуществующая переменная;
+`:(){ :|:& };:` - Этот Bash код создаёт функцию, которая запускает ещё два своих экземпляра, которые, в свою очередь снова запускают эту функцию и так до тех пор, пока этот процесс не займёт всю физическую память (fork bomb).
 
-`-x` - выводит выполняемые команды в stdout перед выполненинем;
+```bash
+    $ dmesg | tail -2
+[   56.738773] 14:43:33.144448 timesync vgsvcTimeSyncWorker: Radical guest time change: 59 045 288 273 000ns (GuestNow=1 638 715 413 144 306 000 ns GuestLast=1 638 656 367 856 033 000 ns fSetTimeLastLoop=true )
+[  131.845562] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-1.scope  
+    $ cat /sys/fs/cgroup/pids/user.slice/user-1000.slice/pids.max
+    2446
+```
 
-`-o pipefails` -  прекращает выполнение скрипта, даже если одна из частей конвейера завершилась ошибкой.
+Механизм контрольных групп (cgroups) обеспечивает ограничение количества процессов в рамках данной контрольной группы.   
 
-Позволяет  более безопасно выполнять сценарии, помогает быстро производить отладку. 
-
-9. ##### Используя `-o stat` для `ps`, определите, какой наиболее часто встречающийся статус у процессов в системе. В `man ps` ознакомьтесь (`/PROCESS STATE CODES`) что значат дополнительные к основной заглавной буквы статуса процессов. Его можно не учитывать при расчете (считать S, Ss или Ssl равнозначными).
-
-   ```bash
-   $ ps -eo stat > ps.txt
-   $ sort ps.txt | uniq -c
-     11 I
-     39 I<
-      1 R+
-     34 S
-      1 Sl
-      1 SLsl
-      2 SN
-      1 S<s
-     15 Ss
-      1 Ss+
-      6 Ssl
-      1 STAT
-   ```
-Ответ: 
-
-Наиболее часто встречается статус процессов `S*(S,Sl,SLsl,SN,S<s,Ss+,Ssl,)`- не активный (спящий), ожидает дополнительного события
-
-Следующий по числу `I*(I,I<)` - неактивные потоки ядра.
-
-`R+` - работает, запускается или находится в очереди выполнения.
-
-Дополнительные символы: `<` - повышенный приоритет, `+` - процесс в группе процессов выполняющихся вне очереди, `s`- лидер сесии, `L` - процесс с заблокированными страницами памяти, `l` - многопоточный, `N` - низкоприоритетный.
+Повлиять на число процессов доступное пользователю в текущей сесси можно командой: `ulimit -u 100`.
 
 ---
+
+
