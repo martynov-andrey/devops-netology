@@ -2,435 +2,188 @@
 
 ---
 
-### Домашнее задание к занятию "3.5. Файловые системы"
+### Домашнее задание к занятию "3.6. Компьютерные сети, лекция 1"
 
-1. #### Узнайте о [sparse](https://ru.wikipedia.org/wiki/%D0%A0%D0%B0%D0%B7%D1%80%D0%B5%D0%B6%D1%91%D0%BD%D0%BD%D1%8B%D0%B9_%D1%84%D0%B0%D0%B9%D0%BB) (разряженных) файлах.
+1. #### Работа c HTTP через телнет.
+- Подключитесь утилитой телнет к сайту stackoverflow.com
+`telnet stackoverflow.com 80`
+- отправьте HTTP запрос
+```bash
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
+[press enter]
+[press enter]
+```
+- В ответе укажите полученный HTTP код, что он означает?
 
 ```bash
-    $ truncate -s 512M file.img
-    $ du -h --apparent-size file.img
-512M    file.img
-    $ du -h file.img
-0       file.img
-    $ cp file.img copy.img --sparse=never
-    $ du -h copy.img
-512M    copy.img
-    $ fallocate -d copy.img && du -h copy.img
-0       copy.img
-    $ cp file.img sparse_copy.img --sparse=always
-    $ du -h sparse_copy.img
-0       sparse_copy.img
-````
+  $ telnet stackoverflow.com 80
+Trying 151.101.193.69...
+Connected to stackoverflow.com.
+Escape character is '^]'.
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
 
-2. #### Могут ли файлы, являющиеся жесткой ссылкой на один объект, иметь разные права доступа и владельца? Почему?
+HTTP/1.1 301 Moved Permanently
+cache-control: no-cache, no-store, must-revalidate
+location: https://stackoverflow.com/questions
+x-request-guid: 41698738-3ff9-4447-8ea6-3ad4f5cf7571
+feature-policy: microphone 'none'; speaker 'none'
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+Accept-Ranges: bytes
+Date: Sat, 11 Dec 2021 15:06:53 GMT
+Via: 1.1 varnish
+Connection: close
+X-Served-By: cache-bma1625-BMA
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1639235213.418182,VS0,VE101
+Vary: Fastly-SSL
+X-DNS-Prefetch-Control: off
+Set-Cookie: prov=2e8fc8cc-a2bb-8d73-fa4c-70c6e9d08a4d; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
 
-```bash
-   $ touch test_file
-   $ ln test_file test_file_hl1
-   $ chmod +x test_file_hl1
-   vagrant@vagrant:~$ ls -l test_file*
--rwxrwxr-x 2 vagrant vagrant 0 Dec  7 15:08 test_file
--rwxrwxr-x 2 vagrant vagrant 0 Dec  7 15:08 test_file_hl1
-   $ sudo chown root. test_file_hl1
-   $ ls -l test_file*
--rwxrwxr-x 2 root root 0 Dec  7 15:08 test_file
--rwxrwxr-x 2 root root 0 Dec  7 15:08 test_file_hl1
+Connection closed by foreign host.
 ```
 
-Созданный файл `test_file` и hardlink на него `test_file_hl1`, являются идентичными объектами файловой системы. Для них нельзя выставить отличные от файла права или владельца. 
+2. #### Повторите задание 1 в браузере, используя консоль разработчика F12.
+- откройте вкладку `Network`
+- отправьте запрос http://stackoverflow.com
+- найдите первый ответ HTTP сервера, откройте вкладку `Headers`
+- укажите в ответе полученный HTTP код.
 
-3. #### Сделайте `vagrant destroy` на имеющийся инстанс Ubuntu. Замените содержимое Vagrantfile следующим:
-
-    ```bash
-    Vagrant.configure("2") do |config|
-      config.vm.box = "bento/ubuntu-20.04"
-      config.vm.provider :virtualbox do |vb|
-        lvm_experiments_disk0_path = "/tmp/lvm_experiments_disk0.vmdk"
-        lvm_experiments_disk1_path = "/tmp/lvm_experiments_disk1.vmdk"
-        vb.customize ['createmedium', '--filename', lvm_experiments_disk0_path, '--size', 2560]
-        vb.customize ['createmedium', '--filename', lvm_experiments_disk1_path, '--size', 2560]
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk0_path]
-        vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk1_path]
-      end
-    end
-    ```
+```html
+Request URL: https://stackoverflow.com/
+Request Method: GET
+Status Code: 200 
+Remote Address: 151.101.129.69:443
+Referrer Policy: strict-origin-when-cross-origin
+accept-ranges: bytes
+cache-control: private
+content-encoding: gzip
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+content-type: text/html; charset=utf-8
+date: Sat, 11 Dec 2021 15:14:15 GMT
+feature-policy: microphone 'none'; speaker 'none'
+strict-transport-security: max-age=15552000
+vary: Accept-Encoding,Fastly-SSL
+via: 1.1 varnish
+x-cache: MISS
+x-cache-hits: 0
+x-dns-prefetch-control: off
+x-frame-options: SAMEORIGIN
+x-request-guid: cf9849a0-e846-49af-a28b-e2be60063ca0
+x-served-by: cache-bma1677-BMA
+x-timer: S1639235656.732095,VS0,VE105
+:authority: stackoverflow.com
+:method: GET
+:path: /
+:scheme: https
+accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+accept-encoding: gzip, deflate, br
+accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
+cache-control: max-age=0
+cookie: prov=9e76e53e-f463-32d1-915f-abc1a6aa53d0; OptanonAlertBoxClosed=2021-11-01T15:27:49.501Z; OptanonConsent=isIABGlobal=false&datestamp=Mon+Nov+01+2021+18%3A27%3A49+GMT%2B0300+(%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%BE%D0%B5+%D0%B2%D1%80%D0%B5%D0%BC%D1%8F)&version=6.10.0&hosts=&landingPath=NotLandingPage&groups=C0003%3A1%2CC0004%3A1%2CC0002%3A1%2CC0001%3A1; _ym_uid=1635781312173046707; _ym_d=1635781312; mfnes=5437CAQQARoLCKTdvfbl0ps6EAUyCDY2ODY0NTI4
+sec-ch-ua: "Opera GX";v="81", " Not;A Brand";v="99", "Chromium";v="95"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+sec-fetch-dest: document
+sec-fetch-mode: navigate
+sec-fetch-site: none
+sec-fetch-user: ?1
+upgrade-insecure-requests: 1
+user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36 OPR/81.0.4196.61 (Edition Yx GX)
+```
+- проверьте время загрузки страницы, какой запрос обрабатывался дольше всего?
     
-Данная конфигурация создаст новую виртуальную машину с двумя дополнительными неразмеченными дисками по 2.5 Гб.
+  Дольше всего обрабатывался запрос открытия документа `stackoverflow.com 472ms`, 
+
+- приложите скриншот консоли браузера в ответ.
+
+![DevTools](img/webF12.png)
+
+3. #### Какой IP адрес у вас в интернете?
 
 ```bash
-vagrant@vagrant:~$ lsblk
-NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm  /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-sdc                    8:32   0  2.5G  0 disk
+  $ wget -qO- ip.yandex.ru | grep -E -o "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" | uniq
+2.92.126.56
+  $ dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}'
+2.92.126.56
 ```
 
-4. #### Используя `fdisk`, разбейте первый диск на 2 раздела: 2 Гб, оставшееся пространство.
+4. #### Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой `whois`
 
 ```bash
-   $ sudo fdisk -l /dev/sdb
-Disk /dev/sdb: 2.51 GiB, 2684354560 bytes, 5242880 sectors
-Disk model: VBOX HARDDISK
-Units: sectors of 1 * 512 = 512 bytes
-Sector size (logical/physical): 512 bytes / 512 bytes
-I/O size (minimum/optimal): 512 bytes / 512 bytes
-Disklabel type: dos
-Disk identifier: 0xe44b54ab
-
-Device     Boot   Start     End Sectors  Size Id Type
-/dev/sdb1          2048 4196351 4194304    2G 83 Linux
-/dev/sdb2       4196352 5242879 1046528  511M 83 Linux
+  $ whois -h whois.ripe.net 2.92.126.56 | grep -E "(netname|role|origin)"
+netname:        BEELINE-BROADBAND
+role:           CORBINA TELECOM Network Operations
+origin:         AS3216
+origin:         AS8402
 ```
 
-5. #### Используя `sfdisk`, перенесите данную таблицу разделов на второй диск.
+5. #### Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой `traceroute`
 
 ```bash
-   $ sudo sfdisk -d /dev/sdb > sdb.dump
-   $ sudo sfdisk /dev/sdc < sdb.dump
-Checking that no-one is using this disk right now ... OK
-
-Disk /dev/sdc: 2.51 GiB, 2684354560 bytes, 5242880 sectors
-Disk model: VBOX HARDDISK
-Units: sectors of 1 * 512 = 512 bytes
-Sector size (logical/physical): 512 bytes / 512 bytes
-I/O size (minimum/optimal): 512 bytes / 512 bytes
-Disklabel type: dos
-Disk identifier: 0xe44b54ab
-
-Old situation:
-
-Device     Boot Start     End Sectors Size Id Type
-/dev/sdc1        2048 4196351 4194304   2G 83 Linux
-
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Script header accepted.
->>> Created a new DOS disklabel with disk identifier 0xe44b54ab.
-/dev/sdc1: Created a new partition 1 of type 'Linux' and of size 2 GiB.
-/dev/sdc2: Created a new partition 2 of type 'Linux' and of size 511 MiB.
-/dev/sdc3: Done.
-
-New situation:
-Disklabel type: dos
-Disk identifier: 0xe44b54ab
-
-Device     Boot   Start     End Sectors  Size Id Type
-/dev/sdc1          2048 4196351 4194304    2G 83 Linux
-/dev/sdc2       4196352 5242879 1046528  511M 83 Linux
-
-The partition table has been altered.
-Calling ioctl() to re-read partition table.
-Syncing disks.
+$ traceroute -An 8.8.8.8 | grep 'AS'
+ 6  85.21.93.129 [AS8402]  15.790 ms  4.963 ms *
+ 7  195.14.32.22 [AS8402]  5.173 ms 108.170.250.51 [AS15169]  5.830 ms *
+ 8  108.170.250.129 [AS15169]  6.926 ms * *
+ 9  108.170.250.33 [AS15169]  10.282 ms  9.782 ms 74.125.253.109 [AS15169]  21.740 ms
+10  216.239.54.201 [AS15169]  24.258 ms 142.250.57.5 [AS15169]  24.704 ms 74.125.253.147 [AS15169]  24.253 ms
+11  142.251.49.24 [AS15169]  24.453 ms * 142.250.239.64 [AS15169]  17.717 ms
+12  108.170.232.251 [AS15169]  17.614 ms 216.239.57.229 [AS15169]  19.066 ms 216.239.63.27 [AS15169]  24.631 ms
+13  * 216.239.63.27 [AS15169]  24.016 ms *
+20  8.8.8.8 [AS15169]  26.075 ms *  24.435 ms
 ```
 
-6. Соберите `mdadm` RAID1 на паре разделов 2 Гб.
+6. #### Повторите задание 5 в утилите `mtr`. На каком участке наибольшая задержка - delay?
 
 ```bash
-   $ sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sd[bc]1
-mdadm: Note: this array has metadata at the start and
-    may not be suitable as a boot device.  If you plan to
-    store '/boot' on this device please ensure that
-    your boot-loader understands md/v1.x metadata, or use
-    --metadata=0.90
-Continue creating array? Y
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md0 started.
-  $ cat /proc/mdstat
-Personalities : [linear] [multipath] [raid0] [raid1] [raid6] [raid5] [raid4] [raid10]
-md0 : active raid1 sdc1[1] sdb1[0]
-      2094080 blocks super 1.2 [2/2] [UU]
-unused devices: <none>
+  $ mtr -rzn -c 100 8.8.8.8
+Start: 2021-12-11T20:34:46+0300
+HOST: MyHost                      Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1. AS???    172.31.128.1         0.0%   100    0.9   1.9   0.8   2.9   0.4
+  2. AS???    10.100.88.1          0.0%   100    4.0   4.3   2.1   6.5   0.9
+  3. AS???    100.124.0.1          0.0%   100    6.7   5.9   3.2  15.5   1.6
+  4. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+  5. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+  6. AS8402   85.21.224.191        0.0%   100    6.9  10.1   4.2  93.5   9.6
+  7. AS15169  108.170.250.130      0.0%   100   15.1  10.3   7.3  35.7   2.9
+  8. AS15169  209.85.255.136      31.0%   100   25.3  28.0  25.1  44.6   3.1
+  9. AS15169  72.14.238.168        3.0%   100   35.6  35.0  21.8 111.8  15.9
+ 10. AS15169  72.14.236.73         0.0%   100   26.5  28.2  25.8  47.9   2.3
+ 11. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 12. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 13. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 14. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 15. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 16. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 17. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 18. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 19. AS???    ???                 100.0   100    0.0   0.0   0.0   0.0   0.0
+ 20. AS15169  8.8.8.8              0.0%   100   22.4  23.3  20.7  25.9   1.1
+```
+Наибольшая задержка наблюдается на узле 72.14.238.168 AS15169 delay avg=35.6
+
+7. #### Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой `dig`
+
+```bash
+  $ dig +short NS @1.1.1.1 dns.google
+ns1.zdns.google.
+ns2.zdns.google.
+ns3.zdns.google.
+ns4.zdns.google.
+  $ dig +short A @1.1.1.1 dns.google
+8.8.8.8
+8.8.4.4
 ```
 
-7. #### Соберите `mdadm` RAID0 на второй паре маленьких разделов.
+8. #### Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой `dig`
 
 ```bash
-   $ sudo mdadm --create /dev/md1 --level=0 --raid-devices=2 /dev/sd[bc]2
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md1 started.
-   $ cat /proc/mdstat
-Personalities : [linear] [multipath] [raid0] [raid1] [raid6] [raid5] [raid4] [raid10]
-md1 : active raid0 sdc2[1] sdb2[0]
-      1042432 blocks super 1.2 512k chunks
-
-md0 : active raid1 sdc1[1] sdb1[0]
-      2094080 blocks super 1.2 [2/2] [UU]
-unused devices: <none>
+  $ dig +noall +answer @1.1.1.1 -x 8.8.8.8
+8.8.8.8.in-addr.arpa.   77970   IN      PTR     dns.google.
+  $ dig +noall +answer @1.1.1.1 -x 8.8.4.4
+4.4.8.8.in-addr.arpa.   79375   IN      PTR     dns.google.
 ```
-
-8. #### Создайте 2 независимых PV на получившихся md-устройствах.
-
-```bash
-   $ sudo pvcreate /dev/md0 /dev/md1
-  Physical volume "/dev/md0" successfully created.
-  Physical volume "/dev/md1" successfully created.
-   $ sudo pvdisplay /dev/md[0,1]
-  --- Physical volume ---
-  PV Name               /dev/md0
-  VG Name               VG0
-  PV Size               <2.00 GiB / not usable 0
-  Allocatable           yes
-  PE Size               4.00 MiB
-  Total PE              511
-  Free PE               511
-  Allocated PE          0
-  PV UUID               Rjx6YB-vmqQ-gXor-DYr5-RDhr-2rlY-7y36Xe
-
-  --- Physical volume ---
-  PV Name               /dev/md1
-  VG Name               VG0
-  PV Size               1018.00 MiB / not usable 2.00 MiB
-  Allocatable           yes
-  PE Size               4.00 MiB
-  Total PE              254
-  Free PE               254
-  Allocated PE          0
-  PV UUID               z8HqE6-Vq8d-JOcv-a7Qc-89wy-uMJ2-bK3pab
-```
-
-9. #### Создайте общую volume-group на этих двух PV.
-
-```bash
-   $ sudo vgcreate -v VG0 /dev/md[0,1]
-  Wiping signatures on new PV /dev/md0.
-  Wiping signatures on new PV /dev/md1.
-  Adding physical volume '/dev/md0' to volume group 'VG0'
-  Adding physical volume '/dev/md1' to volume group 'VG0'
-  Archiving volume group "VG0" metadata (seqno 0).
-  Creating volume group backup "/etc/lvm/backup/VG0" (seqno 1).
-  Volume group "VG0" successfully created
-  $ sudo vgdisplay VG0
-  --- Volume group ---
-  VG Name               VG0
-  System ID
-  Format                lvm2
-  Metadata Areas        2
-  Metadata Sequence No  1
-  VG Access             read/write
-  VG Status             resizable
-  MAX LV                0
-  Cur LV                0
-  Open LV               0
-  Max PV                0
-  Cur PV                2
-  Act PV                2
-  VG Size               <2.99 GiB
-  PE Size               4.00 MiB
-  Total PE              765
-  Alloc PE / Size       0 / 0
-  Free  PE / Size       765 / <2.99 GiB
-  VG UUID               Js65eh-9Bgl-JntR-bUPt-jawv-KEpm-4gJOWO
-```
-
-10. #### Создайте LV размером 100 Мб, указав его расположение на PV с RAID0.
-
-```bash
-   $ sudo lvcreate -L 100m -n LV0 VG0 /dev/md1
-  Logical volume "LV0" created.
-   $ sudo lvdisplay VG0
-  --- Logical volume ---
-  LV Path                /dev/VG0/LV0
-  LV Name                LV0
-  VG Name                VG0
-  LV UUID                X1Y1Iy-YIVu-wXPO-fzfc-152K-a3Qb-vGzmQq
-  LV Write Access        read/write
-  LV Creation host, time vagrant, 2021-12-07 17:47:57 +0000
-  LV Status              available
-  # open                 0
-  LV Size                100.00 MiB
-  Current LE             25
-  Segments               1
-  Allocation             inherit
-  Read ahead sectors     auto
-  - currently set to     4096
-  Block device           253:2
-```
-
-11. #### Создайте `mkfs.ext4` ФС на получившемся LV.
-
-```bash
-   $ sudo mkfs.ext4 /dev/VG0/LV0
-mke2fs 1.45.5 (07-Jan-2020)
-Creating filesystem with 25600 4k blocks and 25600 inodes
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (1024 blocks): done
-Writing superblocks and filesystem accounting information: done
-```
-
-12. #### Смонтируйте этот раздел в любую директорию, например, `/tmp/new`.
-
-```bash
-   $ mkdir /tmp/new
-   $ sudo mount /dev/VG0/LV0 /tmp/new
-   $ mount | grep new
-/dev/mapper/VG0-LV0 on /tmp/new type ext4 (rw,relatime,stripe=256)
-```
-
-13. #### Поместите туда тестовый файл, например `wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz`.
-
-```bash
-   $ sudo wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz
---2021-12-07 20:01:04--  https://mirror.yandex.ru/ubuntu/ls-lR.gz
-Resolving mirror.yandex.ru (mirror.yandex.ru)... 213.180.204.183, 2a02:6b8::183
-Connecting to mirror.yandex.ru (mirror.yandex.ru)|213.180.204.183|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 22739144 (22M) [application/octet-stream]
-Saving to: ‘/tmp/new/test.gz’
-
-/tmp/new/test.gz                                        100%[==============================================================================================================================>]  21.69M  6.28MB/s    in 3.6s
-
-2021-12-07 20:01:08 (6.06 MB/s) - ‘/tmp/new/test.gz’ saved [22739144/22739144]
-```
-
-14. #### Прикрепите вывод `lsblk`.
-
-```bash
-  $ lsblk
-NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sda                    8:0    0   64G  0 disk
-├─sda1                 8:1    0  512M  0 part  /boot/efi
-├─sda2                 8:2    0    1K  0 part
-└─sda5                 8:5    0 63.5G  0 part
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm   /
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]
-sdb                    8:16   0  2.5G  0 disk
-├─sdb1                 8:17   0    2G  0 part
-│ └─md0                9:0    0    2G  0 raid1
-└─sdb2                 8:18   0  511M  0 part
-  └─md1                9:1    0 1018M  0 raid0
-    └─VG0-LV0        253:2    0  100M  0 lvm   /tmp/new
-sdc                    8:32   0  2.5G  0 disk
-├─sdc1                 8:33   0    2G  0 part
-│ └─md0                9:0    0    2G  0 raid1
-└─sdc2                 8:34   0  511M  0 part
-  └─md1                9:1    0 1018M  0 raid0
-    └─VG0-LV0        253:2    0  100M  0 lvm   /tmp/new
-```
-
-15. #### Протестируйте целостность файла:
-
-     ```bash
-     root@vagrant:~# gzip -t /tmp/new/test.gz
-     root@vagrant:~# echo $?
-     0
-     ```
-```bash
-    $ sudo gzip -t /tmp/new/test.gz
-    $ sudo echo $?
-0
-```
-
-16. #### Используя pvmove, переместите содержимое PV с RAID0 на RAID1.
-
-```bash
-  $ sudo pvmove -v /dev/md1 /dev/md0
-  Executing: /sbin/modprobe dm-mirror
-  Archiving volume group "VG0" metadata (seqno 2).
-  Creating logical volume pvmove0
-  activation/volume_list configuration setting not defined: Checking only host tags for VG0/LV0.
-  Moving 25 extents of logical volume VG0/LV0.
-  activation/volume_list configuration setting not defined: Checking only host tags for VG0/LV0.
-  Creating VG0-pvmove0
-  Loading table for VG0-pvmove0 (253:3).
-  Loading table for VG0-LV0 (253:2).
-  Suspending VG0-LV0 (253:2) with device flush
-  Resuming VG0-pvmove0 (253:3).
-  Resuming VG0-LV0 (253:2).
-  Creating volume group backup "/etc/lvm/backup/VG0" (seqno 3).
-  activation/volume_list configuration setting not defined: Checking only host tags for VG0/pvmove0.
-  Checking progress before waiting every 15 seconds.
-  /dev/md1: Moved: 24.00%
-  /dev/md1: Moved: 100.00%
-  $ lsblk /dev/sd[b,c]
-NAME          MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sdb             8:16   0  2.5G  0 disk  
-├─sdb1          8:17   0    2G  0 part  
-│ └─md0       9:126  0    2G  0 raid1 
-│   └─VG0-LV0 253:2    0  100M  0 lvm   
-└─sdb2          8:18   0  511M  0 part  
-  └─md1       9:127  0 1018M  0 raid0 
-sdc             8:32   0  2.5G  0 disk  
-├─sdc1          8:33   0    2G  0 part  
-│ └─md0       9:126  0    2G  0 raid1 
-│   └─VG0-LV0 253:2    0  100M  0 lvm   
-└─sdc2          8:34   0  511M  0 part  
-  └─md1       9:127  0 1018M  0 raid0
-```
-
-17. #### Сделайте `--fail` на устройство в вашем RAID1 md.
-
-```bash
-    $ sudo mdadm --fail /dev/md0 /dev/sdb1
-mdadm: set /dev/sdb1 faulty in /dev/md0
-    $ sudo mdadm -D /dev/md0
-/dev/md126:
-           Version : 1.2
-     Creation Time : Tue Dec  7 16:59:25 2021
-        Raid Level : raid1
-        Array Size : 2094080 (2045.00 MiB 2144.34 MB)
-     Used Dev Size : 2094080 (2045.00 MiB 2144.34 MB)
-      Raid Devices : 2
-     Total Devices : 2
-       Persistence : Superblock is persistent
-
-       Update Time : Wed Dec  8 11:07:26 2021
-             State : clean, degraded 
-    Active Devices : 1
-   Working Devices : 1
-    Failed Devices : 1
-     Spare Devices : 0
-
-Consistency Policy : resync
-
-              Name : vagrant:0  (local to host vagrant)
-              UUID : 856dac6a:32e1ee04:866e48a2:4efb694f
-            Events : 24
-
-    Number   Major   Minor   RaidDevice State
-       -       0        0        0      removed
-       1       8       33        1      active sync   /dev/sdc1
-
-       0       8       17        -      faulty   /dev/sdb1
-```
-
-18. #### Подтвердите выводом `dmesg`, что RAID1 работает в деградированном состоянии.
-
-```bash
-    $ dmesg | grep md0
-[   11.753298] md/raid1:md0: active with 2 out of 2 mirrors
-[   11.753345] md0: detected capacity change from 0 to 2144337920
-[  830.046920] md/raid1:md0: Disk failure on sdb1, disabling device.
-               md/raid1:md0: Operation continuing on 1 devices.
-```    
-
-19. Протестируйте целостность файла, несмотря на "сбойный" диск он должен продолжать быть доступен:
-
-     ```bash
-     root@vagrant:~# gzip -t /tmp/new/test.gz
-     root@vagrant:~# echo $?
-     0
-     ```
-```bash
-    $ sudo gzip -t /tmp/new/test.gz
-    $ sudo echo $?
-0
-```
-
-20. #### Погасите тестовый хост, `vagrant destroy`.
-
-```bash
-    $ vagrant destroy
-    default: Are you sure you want to destroy the 'default' VM? [y/N] y
-==> default: Forcing shutdown of VM...
-==> default: Destroying VM and associated drives...
-```
-
+ 
 ---
