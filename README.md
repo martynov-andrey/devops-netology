@@ -2,157 +2,138 @@
 
 ---
 
-### Домашнее задание к занятию "3.7. Компьютерные сети, лекция 2"
+### Домашнее задание к занятию "3.8. Компьютерные сети, лекция 3"
 
-1. #### Проверьте список доступных сетевых интерфейсов на вашем компьютере. Какие команды есть для этого в Linux и в Windows?
+1. #### Подключитесь к публичному маршрутизатору в интернет. Найдите маршрут к вашему публичному IP
 
-Для Linux:
+```
+telnet route-views.routeviews.org
+Username: rviews
+show ip route x.x.x.x/32
+show bgp x.x.x.x/32
+```
+
+````
+route-views>show ip route 94.228.244.150
+Routing entry for 94.228.244.0/24
+  Known via "bgp 6447", distance 20, metric 0
+  Tag 6939, type external
+  Last update from 64.71.137.241 1d00h ago
+  Routing Descriptor Blocks:
+  * 64.71.137.241, from 64.71.137.241, 1d00h ago
+      Route metric is 0, traffic share count is 1
+      AS Hops 2
+      Route tag 6939
+      MPLS label: none
+route-views>show bgp 94.228.244.150
+BGP routing table entry for 94.228.244.0/24, version 1838922523
+Paths: (4 available, best #4, table default)
+  Not advertised to any peer
+  Refresh Epoch 3
+  3303 6939 15672
+    217.192.89.50 from 217.192.89.50 (138.187.128.158)
+      Origin IGP, localpref 100, valid, external
+      Community: 3303:1006 3303:1021 3303:1030 3303:3067 6939:7154 6939:8233 6939:9002
+      path 7FE1084586A0 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  1351 6939 15672
+    132.198.255.253 from 132.198.255.253 (132.198.255.253)
+      Origin IGP, localpref 100, valid, external
+      path 7FE1029EA1D8 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  20130 6939 15672
+    140.192.8.16 from 140.192.8.16 (140.192.8.16)
+      Origin IGP, localpref 100, valid, external
+      path 7FE0E1F66B50 RPKI State not found
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  6939 15672
+    64.71.137.241 from 64.71.137.241 (216.218.252.164)
+      Origin IGP, localpref 100, valid, external, best
+      unknown transitive attribute: flag 0xE0 type 0x20 length 0xC
+        value 0000 21B7 0000 0777 0000 21B7
+      path 7FE0DD864D48 RPKI State not found
+      rx pathid: 0, tx pathid: 0x0
+````
+
+2. #### Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
 
 ```bash
-   $ sudo ip -c -br link 
+  $ sudo ip link add dummy0 type dummy
+  $ sudo ip link set up dummy0
+  $ sudo ip address add 10.12.12.1/32 dev dummy0
+  $ sudo ip -c -br a
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+bond0            DOWN
+eth0             UP             172.31.56.66/20 fe80::215:5dff:fecd:77fc/64
+dummy0           UNKNOWN        10.12.12.1/32 fe80::54e8:12ff:fefa:b168/64
+  $ sudo ip route add 172.16.220.0/24 via 172.31.56.10
+  $ sudo ip route add 10.100.77.0/29 via 172.31.56.100
+  $ sudo ip -c route
+default via 172.31.48.1 dev eth0
+10.100.77.0/29 via 172.31.56.100 dev eth0
+172.16.220.0/24 via 172.31.56.10 dev eth0
+172.31.48.0/20 dev eth0 proto kernel scope link src 172.31.56.66
+217.69.139.200 dev dummy0 scope link
 ```
 
-Для Windows:
-
-```commandline
-  > netsh interface show interface
-  > getmac /V
-```
-
-2. #### Какой протокол используется для распознавания соседа по сетевому интерфейсу? Какой пакет и команды есть в Linux для этого?
-
-Link Layer Discovery Protocol (LLDP) — протокол канального уровня
+3. #### Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
 
 ```bash
-   $ sudo apt install lldpd
-   $ sudo systemctl start lldpd.service
-   $ sudo lldpctl
--------------------------------------------------------------------------------
-LLDP neighbors:
--------------------------------------------------------------------------------
+  $ sudo ss -tnlp
+State               Recv-Q              Send-Q                           Local Address:Port                              Peer Address:Port                                                                       
+LISTEN              0                   20                                   127.0.0.1:25                                     0.0.0.0:*                  users:(("exim4",pid=4411,fd=3))                         
+LISTEN              0                   128                                  127.0.0.1:953                                    0.0.0.0:*                  users:(("named",pid=813,fd=24))                                                
+LISTEN              0                   3                                    127.0.0.1:2601                                   0.0.0.0:*                  users:(("zebra",pid=666,fd=10))                         
+LISTEN              0                   3                                    127.0.0.1:2602                                   0.0.0.0:*                  users:(("ripd",pid=25609,fd=6))                         
+LISTEN              0                   5                                      0.0.0.0:973                                    0.0.0.0:*                  users:(("rsync",pid=786,fd=4))                                                                 
+LISTEN              0                   10                               172.16.22.253:53                                     0.0.0.0:*                  users:(("named",pid=813,fd=22))                         
+LISTEN              0                   10                                   127.0.0.1:53                                     0.0.0.0:*                  users:(("named",pid=813,fd=21))                         
+LISTEN              0                   128                                    0.0.0.0:22                                     0.0.0.0:*                  users:(("sshd",pid=1098,fd=3))                          
+LISTEN              0                   20                                       [::1]:25                                        [::]:*                  users:(("exim4",pid=4411,fd=4))                         
+LISTEN              0                   128                                      [::1]:953                                       [::]:*                  users:(("named",pid=813,fd=25))                                          
+LISTEN              0                   5                                         [::]:973                                       [::]:*                  users:(("rsync",pid=786,fd=5))                          
+LISTEN              0                   10                                       [::1]:53                                        [::]:*                  users:(("named",pid=813,fd=23))                         
+LISTEN              0                   128                                       [::]:22                                        [::]:*                  users:(("sshd",pid=1098,fd=4))         
 ```
 
-3. #### Какая технология используется для разделения L2 коммутатора на несколько виртуальных сетей? Какой пакет и команды есть в Linux для этого? Приведите пример конфига.
-
-Для разделения коммутатора на виртуальные сети на канальном уровне применяется технология VLAN. Для операционной системы Linux пакет `vlan`
+Порт 53 использует приложение bind9 - локальный DNS сервер:
 
 ```bash
-   $ sudo apt install vlan 
-   $ cat /etc/network/interfaces.d/eth0.4000 
-auto eth0.4000
-iface eth0.4000 inet static
-        address 172.17.10.1
-        netmask 255.255.255.0
-        vlan_raw_device eth0
+  $ sudo lsof -i TCP:53
+COMMAND PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+named   813 bind   21u  IPv4  22492      0t0  TCP localhost:domain (LISTEN)
+named   813 bind   22u  IPv4  22494      0t0  TCP 172.16.22.253:domain (LISTEN)
+named   813 bind   23u  IPv6  22496      0t0  TCP localhost:domain (LISTEN)
 ```
 
-4. #### Какие типы агрегации интерфейсов есть в Linux? Какие опции есть для балансировки нагрузки? Приведите пример конфига.
+Порт 25 использует приложение exim - локальный SMTP сервер:
 
 ```bash
-mode=0 (balance-rr)
-mode=1 (active-backup)
-mode=2 (balance-xor)
-mode=3 (broadcast)
-mode=4 (802.3ad)
-mode=5 (balance-tlb)
-mode=6 (balance-alb)
-  $ cat /etc/network/interfaces.d/bond0
-auto bond0
-iface bond0 inet static
-    address 192.168.137.5
-    netmask 255.255.255.0
-    network 192.168.137.0
-    gateway 192.168.137.1
-    bond-slaves eth1 eth2
-    bond-mode active-backup
-    bond-miimon 100
-    bond-downdelay 200
-    bond-updelay 200
+  $ sudo lsof -i TCP:25
+COMMAND  PID        USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+exim4   4411 Debian-exim    3u  IPv4  28829      0t0  TCP localhost:smtp (LISTEN)
+exim4   4411 Debian-exim    4u  IPv6  28830      0t0  TCP localhost:smtp (LISTEN)
 ```
 
-5. #### Сколько IP адресов в сети с маской /29 ? Сколько /29 подсетей можно получить из сети с маской /24. Приведите несколько примеров /29 подсетей внутри сети 10.10.10.0/24.
+4. #### Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
 
 ```bash
-  $ ipcalc -b 0.0.0.0/29 | grep Hosts
-Hosts/Net: 6                     Class A
-  В подсети /29 6 адресов;
-  $ calc 256/8
-        32
-  Из сети с маской /24 можно получить 32 подсети с маской /29. 
-  $ ipcalc -b 10.10.10.0/24 -s 6 6 6
-Address:   10.10.10.0
-Netmask:   255.255.255.0 = 24
-Wildcard:  0.0.0.255
-=>
-Network:   10.10.10.0/24
-HostMin:   10.10.10.1
-HostMax:   10.10.10.254
-Broadcast: 10.10.10.255
-Hosts/Net: 254                   Class A, Private Internet
-
-1. Requested size: 6 hosts
-Netmask:   255.255.255.248 = 29
-Network:   10.10.10.0/29
-HostMin:   10.10.10.1
-HostMax:   10.10.10.6
-Broadcast: 10.10.10.7
-Hosts/Net: 6                     Class A, Private Internet
-
-2. Requested size: 6 hosts
-Netmask:   255.255.255.248 = 29
-Network:   10.10.10.8/29
-HostMin:   10.10.10.9
-HostMax:   10.10.10.14
-Broadcast: 10.10.10.15
-Hosts/Net: 6                     Class A, Private Internet
-
-3. Requested size: 6 hosts
-Netmask:   255.255.255.248 = 29
-Network:   10.10.10.16/29
-HostMin:   10.10.10.17
-HostMax:   10.10.10.22
-Broadcast: 10.10.10.23
-Hosts/Net: 6                     Class A, Private Internet
-
-Needed size:  24 addresses.
-Used network: 10.10.10.0/27
-Unused:
-10.10.10.24/29
-10.10.10.32/27
-10.10.10.64/26
-10.10.10.128/25
+  $ sudo ss -unap
+State          Recv-Q         Send-Q                  Local Address:Port                   Peer Address:Port                                                                                                     
+UNCONN         0              0                       172.16.22.253:53                          0.0.0.0:*             users:(("named",pid=813,fd=517),("named",pid=813,fd=516),("named",pid=813,fd=515))         
+UNCONN         0              0                           127.0.0.1:53                          0.0.0.0:*             users:(("named",pid=813,fd=514),("named",pid=813,fd=513),("named",pid=813,fd=512))         
+UNCONN         0              0                             0.0.0.0:520                         0.0.0.0:*             users:(("ripd",pid=25609,fd=7))                                                                                                                        
+UNCONN         0              0                               [::1]:53                             [::]:*             users:(("named",pid=813,fd=520),("named",pid=813,fd=519),("named",pid=813,fd=518))     
 ```
 
-6. #### Задача: вас попросили организовать стык между 2-мя организациями. Диапазоны 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 уже заняты. Из какой подсети допустимо взять частные IP адреса? Маску выберите из расчета максимум 40-50 хостов внутри подсети.
+* 53 - порт DNS сервера bind;
+* 520 - порт, протокол динамической маршрутизации rip, демон ripd. 
 
-```bash
-   $ ipcalc -b 100.64.0.0/26
-Address:   100.64.0.0
-Netmask:   255.255.255.192 = 26
-Wildcard:  0.0.0.63
-=>
-Network:   100.64.0.0/26
-HostMin:   100.64.0.1
-HostMax:   100.64.0.62
-Broadcast: 100.64.0.63
-Hosts/Net: 62                    Class A
-```
+6. #### Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали. 
 
-7. #### Как проверить ARP таблицу в Linux, Windows? Как очистить ARP кеш полностью? Как из ARP таблицы удалить только один нужный IP?
+![L3 network diagram](img/homelan.PNG)
 
-Для Linux:
-
-```bash
-   $ ip neighbor
-   $ sudo ip neigh flush all
-   $ ip neighbor del 172.26.96.1
-```
-
-Для Windows:
-
-```commandline
-   > arp -a
-   > arp -d 192.168.10.5
-   > arp -d *
-```
----
+ ---
