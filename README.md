@@ -1,153 +1,114 @@
-# devops-netology
+### Как сдавать задания
+
+Вы уже изучили блок «Системы управления версиями», и начиная с этого занятия все ваши работы будут приниматься ссылками на .md-файлы, размещённые в вашем публичном репозитории.
+
+Скопируйте в свой .md-файл содержимое этого файла; исходники можно посмотреть [здесь](https://raw.githubusercontent.com/netology-code/sysadm-homeworks/devsys10/04-script-01-bash/README.md). Заполните недостающие части документа решением задач (заменяйте `???`, ОСТАЛЬНОЕ В ШАБЛОНЕ НЕ ТРОГАЙТЕ чтобы не сломать форматирование текста, подсветку синтаксиса и прочее, иначе можно отправиться на доработку) и отправляйте на проверку. Вместо логов можно вставить скриншоты по желани.
 
 ---
 
-### Домашнее задание к занятию "3.9. Элементы безопасности информационных систем"
 
-#### 1. Установите Bitwarden плагин для браузера. Зарегестрируйтесь и сохраните несколько паролей.
+# Домашнее задание к занятию "4.1. Командная оболочка Bash: Практические навыки"
 
-![Bitwarden plugin](img/bitwarden_plug.PNG)
+## Обязательная задача 1
 
-#### 2.Установите Google authenticator на мобильный телефон. Настройте вход в Bitwarden акаунт через Google authenticator OTP.
-
-![Bitwarden via Google authenticator](img/bitwarden_auth.png)
-
-#### 3.Установите apache2, сгенерируйте самоподписанный сертификат, настройте тестовый сайт для работы по HTTPS.
-
+Есть скрипт:
 ```bash
-  $ cat /etc/apache2/sites-enabled/test.conf
-<IfModule mod_ssl.c>
-<VirtualHost *:443>
-   ServerName example.com
-   DocumentRoot /var/www/test
-   SSLEngine on
-   SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
-   SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
-</VirtualHost>
-</IfModule>
-  $ openssl x509 -text -noout -in  /etc/ssl/certs/apache-selfsigned.crt | head -n 11
-Certificate:
-    Data:
-        Version: 3 (0x2)
-        Serial Number:
-            64:78:43:52:89:e8:b6:2e:54:34:bb:cf:5d:e5:cb:b5:11:d2:7a:e0
-        Signature Algorithm: sha256WithRSAEncryption
-        Issuer: C = RU, ST = Moscow, L = Moscow, O = Company Name, OU = Org, CN = www.example.com
-        Validity
-            Not Before: Jan 10 10:47:52 2022 GMT
-            Not After : Jan 10 10:47:52 2023 GMT
-        Subject: C = RU, ST = Moscow, L = Moscow, O = Company Name, OU = Org, CN = www.example.com
-  $ curl -k https://localhost/
-<h1>Hi! It worked!</h1>        
+a=1
+b=2
+c=a+b
+d=$a+$b
+e=$(($a+$b))
 ```
 
-#### 4. Проверьте на TLS уязвимости произвольный сайт в интернете (кроме сайтов МВД, ФСБ, МинОбр, НацБанк, РосКосмос, РосАтом, РосНАНО и любых госкомпаний, объектов КИИ, ВПК ... и тому подобное).
+Какие значения переменным c,d,e будут присвоены? Почему?
 
+| Переменная  | Значение | Обоснование |
+| ------------ | ------------- | ------------- |
+| `c`  | a+b  | Переменной `c` присвоена строка со значением a+b |
+| `d`  | 1+2  | Переменной `d` присвоена строка из значений переменных `$a` и `$b` между которыми стоит символ `"+"`|
+| `e`  | 2  | Переменной `e` присвоено выражение состоящее из суммы значений переменных `$a` и  `$b`|
+
+
+## Обязательная задача 2
+На нашем локальном сервере упал сервис и мы написали скрипт, который постоянно проверяет его доступность, записывая дату проверок до тех пор, пока сервис не станет доступным (после чего скрипт должен завершиться). В скрипте допущена ошибка, из-за которой выполнение не может завершиться, при этом место на Жёстком Диске постоянно уменьшается. Что необходимо сделать, чтобы его исправить:
+Пропушена закрывающая скобка в выражении `while ((1==1))`, нет условия выхода из цикла, когда сервис становится доступным `else break` 
 ```bash
-    $ ./testssl.sh -U --sneaky https://habr.com
-
-
-###########################################################
-    testssl.sh       3.1dev from https://testssl.sh/dev/
-    (35ddd91 2021-12-21 10:54:58 -- )
-
-      This program is free software. Distribution and
-             modification under GPLv2 permitted.
-      USAGE w/o ANY WARRANTY. USE IT AT YOUR OWN RISK!
-
-       Please file bugs @ https://testssl.sh/bugs/
-
-###########################################################
-
- Using "OpenSSL 1.1.1f  31 Mar 2020" [~98 ciphers]
- on PocketPC:/usr/bin/openssl
- (built: "Nov 24 13:20:48 2021", platform: "debian-amd64")
-
-
-Testing all IPv4 addresses (port 443): 178.248.237.68 192.5.6.30 192.33.14.30 192.26.92.30 192.31.80.30 192.12.94.30 192.35.51.30 192.42.93.30 192.54.112.30 192.43.172.30 192.48.79.30 192.52.178.30 192.41.162.30 192.55.83.30
-------------------------------------------------------------------------------------------------------------------------------------------
- Start 2022-01-10 15:15:24        -->> 178.248.237.68:443 (habr.com) <<--
-
- Further IP addresses:   192.5.6.30 192.33.14.30 192.26.92.30 192.31.80.30 192.12.94.30 192.35.51.30 192.42.93.30 192.54.112.30 192.43.172.30 192.48.79.30 192.52.178.30 192.41.162.30 192.55.83.30
- rDNS (178.248.237.68):  --
- Service detected:       HTTP
-
-
- Testing vulnerabilities
-
- Heartbleed (CVE-2014-0160)                not vulnerable (OK), no heartbeat extension
- CCS (CVE-2014-0224)                       not vulnerable (OK)
- Ticketbleed (CVE-2016-9244), experiment.  not vulnerable (OK)
- ROBOT                                     not vulnerable (OK)
- Secure Renegotiation (RFC 5746)           supported (OK)
- Secure Client-Initiated Renegotiation     not vulnerable (OK)
- CRIME, TLS (CVE-2012-4929)                not vulnerable (OK)
- BREACH (CVE-2013-3587)                    no gzip/deflate/compress/br HTTP compression (OK)  - only supplied "/" tested
- POODLE, SSL (CVE-2014-3566)               not vulnerable (OK)
- TLS_FALLBACK_SCSV (RFC 7507)              No fallback possible (OK), no protocol below TLS 1.2 offered
- SWEET32 (CVE-2016-2183, CVE-2016-6329)    VULNERABLE, uses 64 bit block ciphers
- FREAK (CVE-2015-0204)                     not vulnerable (OK)
- DROWN (CVE-2016-0800, CVE-2016-0703)      not vulnerable on this host and port (OK)
-                                           make sure you don't use this certificate elsewhere with SSLv2 enabled services
-                                           https://censys.io/ipv4?q=23C599AB56B3C8DD6984AFE74F7BE26C88B8EDFD9C47F3B97808D9CFF159C8C4 could help you to find out
- LOGJAM (CVE-2015-4000), experimental      not vulnerable (OK): no DH EXPORT ciphers, no DH key detected with <= TLS 1.2
- BEAST (CVE-2011-3389)                     not vulnerable (OK), no SSL3 or TLS1
- LUCKY13 (CVE-2013-0169), experimental     potentially VULNERABLE, uses cipher block chaining (CBC) ciphers with TLS. Check patches
- Winshock (CVE-2014-6321), experimental    not vulnerable (OK)
- RC4 (CVE-2013-2566, CVE-2015-2808)        no RC4 ciphers detected (OK)
-
-
- Done 2022-01-10 15:16:15 [  60s] -->> 178.248.237.68:443 (habr.com) <<--
+while ((1==1))
+do
+	curl https://localhost:4757
+	if (($? != 0))
+	then
+		date >> curl.log
+  else
+    break
+	fi
+done
 ```
 
-#### 5. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.
+Необходимо написать скрипт, который проверяет доступность трёх IP: `192.168.0.1`, `173.194.222.113`, `87.250.250.242` по `80` порту и записывает результат в файл `log`. Проверять доступность необходимо пять раз для каждого узла.
 
+### Ваш скрипт:
 ```bash
-  $ ssh-keygen
-Generating public/private rsa key pair.
-Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): /home/vagrant/.ssh/new_rsa
-.....
-  $ ssh-copy-id -i .ssh/new_rsa vagrant@172.18.185.223
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/new_rsa.pub"
-The authenticity of host '172.18.185.223 (172.18.185.223)' can't be established.
-ECDSA key fingerprint is SHA256:m/VIsiogMCq1p7qRYnvA8FFGuwjwXmMd4rMKEuuOgaY.
-Are you sure you want to continue connecting (yes/no/[fingerprint])? YES
-/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
-/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
-vagrant@172.18.185.223's password:
-
-Number of key(s) added: 1
-
-Now try logging into the machine, with:   "ssh 'vagrant@172.18.185.223'"
-and check to make sure that only the key(s) you wanted were added.
-  $ ssh -i .ssh/new_rsa vagrant@172.18.185.223
-Last login: Mon Jan 10 12:57:09 2022 from 172.18.176.1
+#!/usr/bin/env bash
+ip=("192.168.0.1" "173.194.222.113" "87.250.250.242")
+declare -i check=0
+while (($check!=5))
+do
+    for host in ${ip[@]}
+    do
+        nc -zw1 $host 80
+        echo $? $host `date` >> logfile.log
+    done
+check+=1
+sleep 1
+done
 ```
- 
-#### 6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.
-
 ```bash
-  $ mv .ssh/new_rsa .ssh/id_new_rsa
-  $ mv .ssh/new_rsa.pub .ssh/id_new_rsa.pub
-  $ cat .ssh/config
-Host debian
-    Hostname 172.18.185.223
-    User vagrant
-    IdentityFile ~/.ssh/id_new_rsa
-  $ ssh debian 'cat ~/.ssh/authorized_keys'
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCnqLTo5eMaliJQNy2lZ8M5L/sGIIMmzJ5lTDnsjCNOjH/KZt+j+bRstm9uSRLeEQ9eQM4Zkt6miIIu31ojLyxF2oYure2A/ByGIRTSp2bcntoWhqkaSPUY6LFD19eTNj9/mfOci1Biz/X9nbDOjXnS14mMyoxPftAP9wk2Nn45x7Do9cc94COPmESnoOddsESYk/soDp1f3q6jiliXdnUqeRkyrvTwK9yb1gdMTbljeUNcsXLg7XnmI0z67FoUljp9Z5f22L6CCulILix1dH1koQ/NEVFalmYYtXwWj0OANVf60cZEMDVv8klfOiWWKGJXkcWk4+Cv27YOc+vGVmvKegAA0AE6ViEQq6KDKMj8dHs74Cq7SB0fu0o0zjKPMc5y8Z6fJyZf40Z2Fqd3f1fxnnztgK7Z2vzJUA6RsIPYNi5zb0cPdUvUGwpwTF5UFVekdH2FM8dbsXEz5SNhyRaQtPIo3FpIXj/0VYl8FCYO5ijMUUR7emaHRRGXgz4l3Uk= vagrant@ubuntu-20
-```
-
-#### 7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.
-
-```bash
-  $ sudo tcpdump -nnei any -c 100 -w ubuntu.pcap
-tcpdump: listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 bytes
-100 packets captured
-102 packets received by filter
-0 packets dropped by kernel
+	$ cat logfile.log 
+1 192.168.0.1 Tue Jan 11 14:35:49 MSK 2022
+0 173.194.222.113 Tue Jan 11 14:35:49 MSK 2022
+0 87.250.250.242 Tue Jan 11 14:35:49 MSK 2022
+1 192.168.0.1 Tue Jan 11 14:35:51 MSK 2022
+0 173.194.222.113 Tue Jan 11 14:35:51 MSK 2022
+0 87.250.250.242 Tue Jan 11 14:35:51 MSK 2022
+1 192.168.0.1 Tue Jan 11 14:35:53 MSK 2022
+0 173.194.222.113 Tue Jan 11 14:35:53 MSK 2022
+0 87.250.250.242 Tue Jan 11 14:35:53 MSK 2022
+1 192.168.0.1 Tue Jan 11 14:35:55 MSK 2022
+0 173.194.222.113 Tue Jan 11 14:35:55 MSK 2022
+0 87.250.250.242 Tue Jan 11 14:35:55 MSK 2022
+1 192.168.0.1 Tue Jan 11 14:35:57 MSK 2022
+0 173.194.222.113 Tue Jan 11 14:35:58 MSK 2022
+0 87.250.250.242 Tue Jan 11 14:35:58 MSK 2022
 ```
 
-![Wireshark dump](img/wireshark.png)
+## Обязательная задача 3
+Необходимо дописать скрипт из предыдущего задания так, чтобы он выполнялся до тех пор, пока один из узлов не окажется недоступным. Если любой из узлов недоступен - IP этого узла пишется в файл error, скрипт прерывается.
 
----
+### Ваш скрипт:
+```bash
+#!/usr/bin/env bash
+ip=("192.168.0.1" "173.194.222.113" "87.250.250.242")
+while ((1==1))
+do
+    for host in ${ip[@]}
+    do
+        nc -zw1 $host 80
+        if (($? !=0))
+        then 
+            echo `date` " IP "$host" Not Avalible" >> error.log
+            break 2
+        fi
+    done
+sleep 1
+done
+```
+
+## Дополнительное задание (со звездочкой*) - необязательно к выполнению
+
+Мы хотим, чтобы у нас были красивые сообщения для коммитов в репозиторий. Для этого нужно написать локальный хук для git, который будет проверять, что сообщение в коммите содержит код текущего задания в квадратных скобках и количество символов в сообщении не превышает 30. Пример сообщения: \[04-script-01-bash\] сломал хук.
+
+### Ваш скрипт:
+```bash
+???
+```
