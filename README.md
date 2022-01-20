@@ -88,8 +88,10 @@ google.com - 216.58.207.206
 ```
 
 ### json-файл(ы), который(е) записал ваш скрипт:
-```json
+```bash
     $ cat python/service.json 
+```
+```json
 {"drive.google.com": "74.125.205.194", "mail.google.com": "216.58.207.197", "google.com": "216.58.207.206"}
 ```
 
