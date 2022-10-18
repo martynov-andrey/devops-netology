@@ -37,7 +37,7 @@
 
 [Kibana Role](https://github.com/martynov-andrey/kibana-role.git)
 
-[Playbook]()
+[Playbook](https://github.com/martynov-andrey/devops-netology/blob/main/08-ansible-03-role/playbook/requirements.yml)
 
 ## Необязательная часть
 
