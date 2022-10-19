@@ -1,0 +1,4 @@
+- name: Test my new module
+  hosts: localhost
+  roles:
+    - my_own_namespace.my_own_collection.my_own_role
