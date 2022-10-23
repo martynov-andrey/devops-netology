@@ -1,0 +1,4 @@
+---
+elastic_version: "8.4.3"
+elastic_home: "/opt/elastic/{{ elastic_version }}"
+elastic_archive: "elasticsearch-{{ elastic_version }}-linux-x86_64.tar.gz"
